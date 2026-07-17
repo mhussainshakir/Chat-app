@@ -407,6 +407,167 @@ html, body {
   display: block;
 }
 
+.btn-attach,
+.btn-mic {
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.btn-attach:active,
+.btn-mic:active {
+  opacity: 0.8;
+}
+
+.btn-mic.recording {
+  background: #b00020;
+  color: #fff;
+  border-color: #b00020;
+}
+
+.message-content.message-image {
+  padding: 4px;
+  background: transparent;
+}
+
+.message-content.message-image img {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 10px;
+  display: block;
+}
+
+.message-content.message-audio {
+  padding: 6px;
+  background: transparent;
+}
+
+.message-content.message-audio audio {
+  max-width: 220px;
+}
+
+.tick {
+  font-size: 11px;
+  color: #999;
+  margin-left: 6px;
+  align-self: flex-end;
+}
+
+.tick.seen {
+  color: #34b7f1;
+}
+
+.sender-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.avatar {
+  position: relative;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #666;
+  border: 2px solid var(--bg);
+}
+
+.status-dot.online {
+  background: #2ecc71;
+}
+
+.group-avatar {
+  background: var(--bg-light);
+}
+
+.requests-section {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.requests-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--bg-light);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.request-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.request-email {
+  font-size: 11px;
+  color: #999;
+}
+
+.request-actions button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  font-size: 13px;
+}
+
+.request-actions .btn-accept {
+  background: #2ecc71;
+  color: #000;
+}
+
+.request-actions .btn-reject {
+  background: #b00020;
+  color: #fff;
+}
+
+.group-members-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hint-text {
+  font-size: 12px;
+  color: #999;
+}
+
 .btn-send {
   background: var(--primary);
   border: none;

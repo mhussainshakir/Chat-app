@@ -23,7 +23,7 @@
       <h1>ChatKaro</h1>
     </div>
     <p class="subtitle">Email aur password se login karein</p>
-    
+
     <form id="form-login">
       <div class="input-group">
         <label>Email</label>
@@ -36,7 +36,7 @@
       <button type="submit" class="btn btn-primary">Login Karein</button>
       <div class="error-box" id="login-error"></div>
     </form>
-    
+
     <div class="auth-footer">
       <p>Account nahi hai? <button class="btn-text" onclick="showScreen('signup')">Banayein</button></p>
     </div>
@@ -51,7 +51,7 @@
       <h1>ChatKaro</h1>
     </div>
     <p class="subtitle">Naya account banayein</p>
-    
+
     <form id="form-signup">
       <div class="input-group">
         <label>Email</label>
@@ -68,7 +68,7 @@
       <button type="submit" class="btn btn-primary">Account Banayein</button>
       <div class="error-box" id="signup-error"></div>
     </form>
-    
+
     <div class="auth-footer">
       <p>Pehle se account hai? <button class="btn-text" onclick="showScreen('login')">Login karein</button></p>
     </div>
@@ -83,7 +83,7 @@
       <h1>Profile Banayein</h1>
     </div>
     <p class="subtitle">Apka naam likhen</p>
-    
+
     <form id="form-profile">
       <div class="input-group">
         <label>Poora Naam</label>
@@ -110,10 +110,17 @@
         </div>
         <div class="sidebar-buttons">
           <button class="icon-btn" id="btn-theme" title="Dark/Light">🌙</button>
-          <button class="icon-btn" id="btn-add" title="Add contact">➕</button>
+          <button class="icon-btn" id="btn-new-group" title="Naya group">👥</button>
+          <button class="icon-btn" id="btn-add" title="Contact add karein">➕</button>
           <button class="icon-btn" id="btn-logout" title="Logout">⏻</button>
         </div>
       </div>
+
+      <div id="requests-section" class="requests-section" style="display:none;">
+        <div class="requests-title">Naye Contact Requests</div>
+        <div id="requests-list"></div>
+      </div>
+
       <div class="contacts-list" id="contacts-list"></div>
     </aside>
 
@@ -136,6 +143,7 @@
         <form class="message-form" id="message-form">
           <button type="button" class="btn-attach" id="btn-attach" title="Photo bhejein">📎</button>
           <input type="file" id="file-input" accept="image/*" style="display:none;" />
+          <button type="button" class="btn-mic" id="btn-mic" title="Voice message" style="display:none;">🎤</button>
           <input type="text" id="message-input" placeholder="Message likhen..." />
           <button type="submit" class="btn-send">➤</button>
         </form>
@@ -152,11 +160,37 @@
       </div>
       <form id="form-add-contact">
         <div class="input-group">
-          <label>Email</label>
+          <label>Unka Email</label>
           <input type="email" id="add-contact-email" placeholder="unka@email.com" required />
         </div>
-        <button type="submit" class="btn btn-primary">Add Karein</button>
+        <div class="input-group">
+          <label>Aap unhein kis naam se save karna chahte hain</label>
+          <input type="text" id="add-contact-name" placeholder="Jaise: Ali Bhai" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Request Bhejein</button>
         <div class="error-box" id="add-contact-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Group Modal -->
+  <div class="modal" id="modal-new-group">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Naya Group</h2>
+        <button class="btn-close" onclick="closeModal('modal-new-group')">✕</button>
+      </div>
+      <form id="form-new-group">
+        <div class="input-group">
+          <label>Group ka Naam</label>
+          <input type="text" id="group-name" placeholder="Jaise: Family" required />
+        </div>
+        <div class="input-group">
+          <label>Members Chunein</label>
+          <div id="group-members-list" class="group-members-list"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Group Banayein</button>
+        <div class="error-box" id="group-error"></div>
       </form>
     </div>
   </div>
