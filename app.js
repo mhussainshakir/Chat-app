@@ -71,6 +71,21 @@ function timeAgo(dateObj) {
   return days + ' din pehle';
 }
 
+function avatarHtml(name, photoUrl) {
+  if (photoUrl) {
+    return '<img src="' + photoUrl + '" alt="" />';
+  }
+  var initial = (name || '?').charAt(0).toUpperCase();
+  return initial;
+}
+
+function isAboutValid(profile) {
+  if (!profile || !profile.about) return false;
+  if (!profile.aboutExpiresAt) return true;
+  if (!profile.aboutExpiresAt.toDate) return true;
+  return profile.aboutExpiresAt.toDate().getTime() > Date.now();
+}
+
 // ============ AUTH FORMS ============
 var formLogin = document.getElementById('form-login');
 if (formLogin) {
@@ -443,7 +458,7 @@ function loadApp() {
 
   var initials = myProfile.name.charAt(0).toUpperCase();
   var avatarEl = document.getElementById('my-avatar');
-  if (avatarEl) avatarEl.textContent = initials;
+  if (avatarEl) avatarEl.innerHTML = avatarHtml(myProfile.name, myProfile.photoUrl);
 
   var nameEl = document.getElementById('my-name');
   if (nameEl) nameEl.textContent = myProfile.name;
@@ -539,7 +554,7 @@ function buildContactItem(contact) {
   var item = document.createElement('div');
   item.className = 'contact-item';
   item.innerHTML =
-    '<div class="avatar">' + contact.name.charAt(0).toUpperCase() + '<span class="status-dot" id="dot-' + contact.uid + '"></span></div>' +
+    '<div class="avatar">' + avatarHtml(contact.name, contact.photoUrl) + '<span class="status-dot" id="dot-' + contact.uid + '"></span></div>' +
     '<div><div class="contact-name">' + escapeHtml(contact.name) + '</div>' +
     '<div class="contact-status" id="status-' + contact.uid + '">...</div></div>';
 
@@ -548,11 +563,18 @@ function buildContactItem(contact) {
   });
   db.collection('users').doc(contact.uid).onSnapshot(function (docSnap) {
     if (!docSnap.exists) return;
-    var presence = renderPresence(docSnap.data().lastActive);
+    var data = docSnap.data();
+    var presence = renderPresence(data.lastActive);
     var statusEl = item.querySelector('#status-' + contact.uid) || document.getElementById('status-' + contact.uid);
     var dotEl = item.querySelector('#dot-' + contact.uid) || document.getElementById('dot-' + contact.uid);
-    if (statusEl) statusEl.textContent = presence.text;
+    if (statusEl) statusEl.textContent = isAboutValid(data) ? data.about : presence.text;
     if (dotEl) dotEl.classList.toggle('online', presence.online);
+    if (data.photoUrl) {
+      var avatarDiv = item.querySelector('.avatar');
+      if (avatarDiv && !avatarDiv.querySelector('img')) {
+        avatarDiv.innerHTML = avatarHtml(contact.name, data.photoUrl) + '<span class="status-dot" id="dot-' + contact.uid + '"></span>';
+      }
+    }
   });
   return item;
 }
@@ -580,6 +602,13 @@ function openDmChat(uid, name) {
   document.getElementById('chat-window').classList.add('active');
   document.getElementById('chat-name').textContent = name;
   document.getElementById('chat-status').textContent = '';
+  var chatAvatarEl = document.getElementById('chat-avatar');
+  if (chatAvatarEl) chatAvatarEl.innerHTML = avatarHtml(name, (contactsCache[uid] || {}).photoUrl);
+
+  var headerInfo = document.getElementById('chat-header-info');
+  if (headerInfo) {
+    headerInfo.onclick = function () { openViewProfile(uid); };
+  }
 
   var chatId = getChatId(currentUser.uid, uid);
 
@@ -594,12 +623,50 @@ function openDmChat(uid, name) {
       statusEl.textContent = 'Type kar raha/rahi hai...';
     } else {
       db.collection('users').doc(uid).get().then(function (u) {
-        if (u.exists) statusEl.textContent = renderPresence(u.data().lastActive).text;
+        if (!u.exists) return;
+        var ud = u.data();
+        statusEl.textContent = isAboutValid(ud) ? ud.about : renderPresence(ud.lastActive).text;
+        if (chatAvatarEl && ud.photoUrl) chatAvatarEl.innerHTML = avatarHtml(name, ud.photoUrl);
       });
     }
   });
 
   loadDmMessages(chatId);
+}
+
+function openViewProfile(uid) {
+  db.collection('users').doc(uid).get().then(function (docSnap) {
+    if (!docSnap.exists) return;
+    var data = docSnap.data();
+
+    document.getElementById('view-photo').innerHTML = avatarHtml(data.name, data.photoUrl);
+    document.getElementById('view-name').textContent = data.name || '';
+    var aboutEl = document.getElementById('view-about');
+    if (isAboutValid(data)) {
+      aboutEl.textContent = data.about;
+      aboutEl.style.display = 'block';
+    } else {
+      aboutEl.style.display = 'none';
+    }
+
+    setInfoRow('view-address-row', 'view-address', data.address);
+    setInfoRow('view-website-row', 'view-website', data.website);
+    setInfoRow('view-hours-row', 'view-hours', data.openingHours);
+
+    document.getElementById('modal-view-profile').classList.add('open');
+  });
+}
+
+function setInfoRow(rowId, valueId, value) {
+  var row = document.getElementById(rowId);
+  var valEl = document.getElementById(valueId);
+  if (!row || !valEl) return;
+  if (value) {
+    valEl.textContent = value;
+    row.style.display = 'flex';
+  } else {
+    row.style.display = 'none';
+  }
 }
 
 function loadDmMessages(chatId) {
@@ -636,6 +703,10 @@ function openGroupChat(groupId, name) {
   document.getElementById('chat-name').textContent = name;
   var group = groupsCache.filter(function (g) { return g.id === groupId; })[0];
   document.getElementById('chat-status').textContent = group ? group.members.length + ' members' : '';
+  var chatAvatarEl = document.getElementById('chat-avatar');
+  if (chatAvatarEl) chatAvatarEl.innerHTML = '👥';
+  var headerInfo = document.getElementById('chat-header-info');
+  if (headerInfo) headerInfo.onclick = null;
 
   if (typeof unsubscribeChatDoc === 'function') { unsubscribeChatDoc(); unsubscribeChatDoc = null; }
 
@@ -730,6 +801,11 @@ function openNewGroupModal() {
 
 // ============ BUTTONS ============
 function setupButtons() {
+  var profileCard = document.getElementById('my-profile-card');
+  if (profileCard) {
+    profileCard.addEventListener('click', openEditProfile);
+  }
+
   var btnAdd = document.getElementById('btn-add');
   if (btnAdd) {
     btnAdd.addEventListener('click', function () {
@@ -761,7 +837,91 @@ function setupButtons() {
   }
 }
 
-// ============ AUTH STATE LISTENER ============
+// ============ EDIT PROFILE ============
+var pendingPhotoUrl = null;
+
+function openEditProfile() {
+  pendingPhotoUrl = myProfile.photoUrl || null;
+  document.getElementById('edit-photo-preview').innerHTML = avatarHtml(myProfile.name, myProfile.photoUrl);
+  document.getElementById('edit-name').value = myProfile.name || '';
+  document.getElementById('edit-about').value = myProfile.about || '';
+  document.getElementById('edit-address').value = myProfile.address || '';
+  document.getElementById('edit-website').value = myProfile.website || '';
+  document.getElementById('edit-hours').value = myProfile.openingHours || '';
+  document.getElementById('edit-profile-error').textContent = '';
+  document.getElementById('modal-edit-profile').classList.add('open');
+}
+
+var btnChangePhoto = document.getElementById('btn-change-photo');
+var editPhotoInput = document.getElementById('edit-photo-input');
+if (btnChangePhoto && editPhotoInput) {
+  btnChangePhoto.addEventListener('click', function () { editPhotoInput.click(); });
+  editPhotoInput.addEventListener('change', function () {
+    var file = editPhotoInput.files[0];
+    editPhotoInput.value = '';
+    if (!file) return;
+    var errorEl = document.getElementById('edit-profile-error');
+    errorEl.textContent = 'Photo upload ho rahi hai...';
+    uploadToCloudinary(file, 'image').then(function (url) {
+      pendingPhotoUrl = url;
+      document.getElementById('edit-photo-preview').innerHTML = avatarHtml(myProfile.name, url);
+      errorEl.textContent = '';
+    }).catch(function (err) {
+      errorEl.textContent = 'Photo error: ' + err.message;
+    });
+  });
+}
+
+var formEditProfile = document.getElementById('form-edit-profile');
+if (formEditProfile) {
+  formEditProfile.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var errorEl = document.getElementById('edit-profile-error');
+    errorEl.textContent = '';
+
+    var name = document.getElementById('edit-name').value.trim();
+    var about = document.getElementById('edit-about').value.trim();
+    var durationHrs = parseInt(document.getElementById('edit-about-duration').value, 10);
+    var address = document.getElementById('edit-address').value.trim();
+    var website = document.getElementById('edit-website').value.trim();
+    var hours = document.getElementById('edit-hours').value.trim();
+
+    if (!name) { errorEl.textContent = 'Naam zaroori hai'; return; }
+
+    var updateData = {
+      name: name,
+      about: about,
+      address: address,
+      website: website,
+      openingHours: hours,
+      photoUrl: pendingPhotoUrl || null
+    };
+
+    if (about && durationHrs > 0) {
+      updateData.aboutExpiresAt = firebase.firestore.Timestamp.fromMillis(Date.now() + durationHrs * 3600000);
+    } else {
+      updateData.aboutExpiresAt = null;
+    }
+
+    db.collection('users').doc(currentUser.uid).set(updateData, { merge: true }).then(function () {
+      myProfile = Object.assign ? Object.assign({}, myProfile, updateData) : mergeObj(myProfile, updateData);
+      var nameEl = document.getElementById('my-name');
+      if (nameEl) nameEl.textContent = myProfile.name;
+      var avatarEl = document.getElementById('my-avatar');
+      if (avatarEl) avatarEl.innerHTML = avatarHtml(myProfile.name, myProfile.photoUrl);
+      closeModal('modal-edit-profile');
+    }).catch(function (err) {
+      errorEl.textContent = 'Error: ' + err.message;
+    });
+  });
+}
+
+function mergeObj(base, extra) {
+  var out = {};
+  for (var k in base) { if (base.hasOwnProperty(k)) out[k] = base[k]; }
+  for (var k2 in extra) { if (extra.hasOwnProperty(k2)) out[k2] = extra[k2]; }
+  return out;
+}
 auth.onAuthStateChanged(function (user) {
   if (user) {
     currentUser = user;
