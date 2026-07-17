@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chatkaro-v3';
+const CACHE_NAME = 'chatkaro-v4';
 const SHELL_FILES = [
   './',
   './index.html',
