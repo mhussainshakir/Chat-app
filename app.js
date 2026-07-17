@@ -48,6 +48,36 @@ function closeChat() {
   if (chatWindow) chatWindow.classList.remove('active');
   var emptyState = document.getElementById('empty-state');
   if (emptyState) emptyState.style.display = 'flex';
+  openSidebarMobile();
+}
+
+// ============ MOBILE SIDEBAR ============
+function isMobileView() {
+  return window.innerWidth <= 768;
+}
+
+function openSidebarMobile() {
+  if (!isMobileView()) return;
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.add('open');
+  if (overlay) overlay.classList.add('open');
+}
+
+function closeSidebarMobile() {
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function toggleSidebarMobile() {
+  var sidebar = document.querySelector('.sidebar');
+  if (sidebar && sidebar.classList.contains('open')) {
+    closeSidebarMobile();
+  } else {
+    openSidebarMobile();
+  }
 }
 
 function getChatId(uidA, uidB) {
@@ -468,6 +498,7 @@ function loadApp() {
 
   loadContacts();
   loadGroups();
+  openSidebarMobile();
   watchIncomingRequests();
   watchMySentRequests();
   setupButtons();
@@ -600,6 +631,7 @@ function openDmChat(uid, name) {
 
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('chat-window').classList.add('active');
+  closeSidebarMobile();
   document.getElementById('chat-name').textContent = name;
   document.getElementById('chat-status').textContent = '';
   var chatAvatarEl = document.getElementById('chat-avatar');
@@ -700,6 +732,7 @@ function openGroupChat(groupId, name) {
 
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('chat-window').classList.add('active');
+  closeSidebarMobile();
   document.getElementById('chat-name').textContent = name;
   var group = groupsCache.filter(function (g) { return g.id === groupId; })[0];
   document.getElementById('chat-status').textContent = group ? group.members.length + ' members' : '';
@@ -834,6 +867,16 @@ function setupButtons() {
       var isDark = document.documentElement.style.filter === 'invert(1)';
       document.documentElement.style.filter = isDark ? 'invert(0)' : 'invert(1)';
     });
+  }
+
+  var btnMenu = document.getElementById('btn-menu');
+  if (btnMenu) {
+    btnMenu.addEventListener('click', toggleSidebarMobile);
+  }
+
+  var sidebarOverlay = document.getElementById('sidebar-overlay');
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', closeSidebarMobile);
   }
 }
 

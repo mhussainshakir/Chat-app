@@ -740,11 +740,23 @@ html, body {
   cursor: pointer;
 }
 
+/* MOBILE TOPBAR (hidden on desktop, shown on mobile) */
+.mobile-topbar {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
 /* MOBILE */
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    width: 100%;
+    top: 0;
+    left: 0;
+    width: 85%;
+    max-width: 320px;
     height: 100%;
     z-index: 999;
     transform: translateX(-100%);
@@ -753,6 +765,39 @@ html, body {
 
   .sidebar.open {
     transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .mobile-topbar h3 {
+    font-size: 16px;
+    font-weight: 600;
   }
 
   .auth-box {
