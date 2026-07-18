@@ -58,6 +58,15 @@ service cloud.firestore {
       }
     }
 
+    // ===== STATUS / STORIES =====
+    // Any signed-in user can post/read statuses (client filters to contacts only,
+    // same trust model as user profiles above). Only the author can delete/update.
+    match /statuses/{statusId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAuth() && resource.data.uid == request.auth.uid;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;

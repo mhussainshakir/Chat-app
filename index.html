@@ -109,17 +109,36 @@
           </div>
         </div>
         <div class="sidebar-buttons">
+          <button class="icon-btn" id="btn-storage" title="Storage (photos/videos manage karein)">🗄️</button>
           <button class="icon-btn" id="btn-theme" title="Dark/Light">🌙</button>
           <button class="icon-btn" id="btn-logout" title="Logout">⏻</button>
         </div>
       </div>
+
+      <div class="status-strip" id="status-strip"></div>
 
       <div id="requests-section" class="requests-section" style="display:none;">
         <div class="requests-title">Naye Contact Requests</div>
         <div id="requests-list"></div>
       </div>
 
+      <div class="locked-chats-row" id="locked-chats-row" style="display:none;">
+        <span class="locked-chats-label">🔒 Locked Chats</span>
+        <span class="locked-chats-badge" id="locked-chats-badge"></span>
+      </div>
+
       <div class="contacts-list" id="contacts-list"></div>
+
+      <div class="status-list-view" id="status-list-view" style="display:none;"></div>
+
+      <div class="sidebar-bottom-nav" id="sidebar-bottom-nav">
+        <button type="button" class="bottom-nav-btn active" data-tab="chats">
+          <span class="bottom-nav-icon">💬</span><span>Chats</span>
+        </button>
+        <button type="button" class="bottom-nav-btn" data-tab="status">
+          <span class="bottom-nav-icon">🟢</span><span>Status</span>
+        </button>
+      </div>
 
       <button class="fab-add" id="btn-add" title="Contact add karein">➕</button>
       <button class="fab-add fab-group" id="btn-new-group" title="Naya group">👥</button>
@@ -154,6 +173,9 @@
         <form class="message-form" id="message-form">
           <button type="button" class="btn-attach" id="btn-attach" title="Photo bhejein">📎</button>
           <input type="file" id="file-input" accept="image/*" style="display:none;" />
+          <button type="button" class="btn-attach" id="btn-once" title="One-time photo (sirf ek dafa dikhegi)">👁️</button>
+          <button type="button" class="btn-attach" id="btn-document" title="Document (original quality) bhejein">📄</button>
+          <input type="file" id="document-input" accept="image/*" style="display:none;" />
           <button type="button" class="btn-mic" id="btn-mic" title="Voice message" style="display:none;">🎤</button>
           <input type="text" id="message-input" placeholder="Message likhen..." />
           <button type="submit" class="btn-send">➤</button>
@@ -280,6 +302,113 @@
       </div>
     </div>
   </div>
+
+  <!-- Storage Manager Modal -->
+  <div class="modal" id="modal-storage">
+    <div class="modal-box modal-box-wide">
+      <div class="modal-header">
+        <h2>Storage</h2>
+        <button class="btn-close" onclick="closeModal('modal-storage')">✕</button>
+      </div>
+      <div class="storage-summary" id="storage-summary">Load ho raha hai...</div>
+      <div class="storage-actions">
+        <label class="storage-select-all"><input type="checkbox" id="storage-select-all" /> Sab Select Karein</label>
+        <button class="btn-danger-small" id="btn-delete-selected" disabled>Delete Selected</button>
+      </div>
+      <div class="storage-grid" id="storage-grid"></div>
+    </div>
+  </div>
+
+  <!-- Set PIN Modal (first time locking a chat) -->
+  <div class="modal" id="modal-set-pin">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Lock PIN Banayein</h2>
+        <button class="btn-close" onclick="closeModal('modal-set-pin')">✕</button>
+      </div>
+      <form id="form-set-pin">
+        <div class="input-group">
+          <label>4 Digit PIN</label>
+          <input type="password" id="set-pin-value" inputmode="numeric" maxlength="4" placeholder="0000" required />
+        </div>
+        <div class="input-group">
+          <label>PIN Dobara Likhein</label>
+          <input type="password" id="set-pin-confirm" inputmode="numeric" maxlength="4" placeholder="0000" required />
+        </div>
+        <button type="submit" class="btn btn-primary">PIN Save Karein</button>
+        <div class="error-box" id="set-pin-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Unlock PIN Modal -->
+  <div class="modal" id="modal-unlock-pin">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>🔒 Locked Chats</h2>
+        <button class="btn-close" onclick="closeModal('modal-unlock-pin')">✕</button>
+      </div>
+      <form id="form-unlock-pin">
+        <div class="input-group">
+          <label>PIN Likhein</label>
+          <input type="password" id="unlock-pin-value" inputmode="numeric" maxlength="4" placeholder="0000" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Unlock Karein</button>
+        <div class="error-box" id="unlock-pin-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Status Modal -->
+  <div class="modal" id="modal-add-status">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Status Lagayein</h2>
+        <button class="btn-close" onclick="closeModal('modal-add-status')">✕</button>
+      </div>
+      <div class="status-type-tabs">
+        <button type="button" class="status-tab active" id="tab-photo-status">📷 Photo</button>
+        <button type="button" class="status-tab" id="tab-text-status">🅰️ Text</button>
+      </div>
+
+      <div id="status-photo-panel">
+        <button type="button" class="btn btn-primary" id="btn-pick-status-photo">Photo Chunein</button>
+        <input type="file" id="status-photo-input" accept="image/*" style="display:none;" />
+        <div class="status-photo-preview" id="status-photo-preview"></div>
+      </div>
+
+      <div id="status-text-panel" style="display:none;">
+        <div class="input-group">
+          <label>Status Likhein</label>
+          <textarea id="status-text-value" rows="3" placeholder="Kuch likhein..." maxlength="120"></textarea>
+        </div>
+        <div class="status-color-picker" id="status-color-picker"></div>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="btn-post-status" style="margin-top:14px;">Status Post Karein</button>
+      <div class="error-box" id="add-status-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Full-screen Status Viewer -->
+<div class="status-viewer" id="status-viewer">
+  <div class="status-viewer-progress" id="status-viewer-progress"></div>
+  <div class="status-viewer-header">
+    <div class="avatar" id="status-viewer-avatar"></div>
+    <div class="status-viewer-info">
+      <div id="status-viewer-name"></div>
+      <div id="status-viewer-time"></div>
+    </div>
+    <button class="btn-close" id="status-viewer-close">✕</button>
+  </div>
+  <div class="status-viewer-body" id="status-viewer-body"></div>
+</div>
+
+<!-- One-time photo full viewer -->
+<div class="once-viewer" id="once-viewer">
+  <img id="once-viewer-img" src="" alt="" />
+  <div class="once-viewer-hint">Bandh karne ke liye tap karein • Ye photo dobara nahi khulegi</div>
 </div>
 
 <!-- Firebase SDK -->
